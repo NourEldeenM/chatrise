@@ -1,8 +1,8 @@
 const { createServer } = require("./app");
-const { SERVER } = require("./src/config")
+const { SERVER } = require("./src/config");
 
 const app = createServer();
 
 app.listen(SERVER.localPort, () => {
-    console.log("listening on port 3000");
-})
+    console.log(`listening on http://localhost:${SERVER.localPort}`);
+});
