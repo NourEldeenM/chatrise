@@ -1,0 +1,26 @@
+{
+  "name": "chatrise",
+  "version": "1.0.0",
+  "description": "A place where conversations elevate.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.9.0",
+    "nodemon": "^3.1.7",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "mongoose": "^8.7.0",
+    "prettier": "^3.3.3"
+  }
+}
