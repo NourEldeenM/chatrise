@@ -1,15 +1,44 @@
-const { userModel } = require("../models/userModel");
-const { v4: uuidv4 } = require("uuid");
-const bcrypt = require("bcrypt");
-const { ACCESS } = require("../config");
+const { userModel } = require('../models/userModel');
+const { v4: uuidv4 } = require('uuid');
+const bcrypt = require('bcrypt');
+const { ACCESS } = require('../config');
+const jwt = require('jsonwebtoken');
+const { AppError } = require('../../utils');
+
+function generateToken(user) {
+    const token = jwt.sign(
+        {
+            id: user.userId,
+            username: user.username,
+            email: user.email,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' },
+    );
+    return token;
+}
+
+async function createHashedPass(password) {
+    return await bcrypt.hash(password, +ACCESS.hashSaltRounds);
+}
 
 async function createUser(details) {
     details.userId = uuidv4();
-    const hashedPass = await bcrypt.hash(details.password, +ACCESS.hashSaltRounds);
-    details.password = hashedPass;
+    details.password = await createHashedPass(details.password);
     const newUser = new userModel(details);
-    const result = await newUser.save();
-    return result;
+    await newUser.save();
+    return generateToken(newUser);
 }
 
-module.exports = { createUser };
+async function validateUser(details) {
+    const record = await userModel.findOne({ email: details.email });
+    if (!record) throw AppError.notFound('Email not found');
+    const correctPassword = await bcrypt.compare(
+        details.password,
+        record.password,
+    );
+    if (!correctPassword)
+        throw AppError.badRequest('Password or Email incorrect');
+    return generateToken(record);
+}
+module.exports = { createUser, validateUser };
