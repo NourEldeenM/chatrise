@@ -3,27 +3,42 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
 const { ACCESS } = require('../config');
 const jwt = require('jsonwebtoken');
+const { AppError } = require('../../utils');
 
-async function createUser(details) {
-    details.userId = uuidv4();
-    const hashedPass = await bcrypt.hash(
-        details.password,
-        +ACCESS.hashSaltRounds,
-    );
-    details.password = hashedPass;
-    const newUser = new userModel(details);
-    await newUser.save();
+function generateToken(user) {
     const token = jwt.sign(
         {
-            id: newUser.userId,
-            username: newUser.username,
-            email: newUser.email,
-            // Add any other details you want in the token
+            id: user.userId,
+            username: user.username,
+            email: user.email,
         },
-        process.env.JWT_SECRET, // The secret key
-        { expiresIn: '1h' }, // Token expiration time
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' },
     );
     return token;
 }
 
-module.exports = { createUser };
+async function createHashedPass(password) {
+    return await bcrypt.hash(password, +ACCESS.hashSaltRounds);
+}
+
+async function createUser(details) {
+    details.userId = uuidv4();
+    details.password = await createHashedPass(details.password);
+    const newUser = new userModel(details);
+    await newUser.save();
+    return generateToken(newUser);
+}
+
+async function validateUser(details) {
+    const record = await userModel.findOne({ email: details.email });
+    if (!record) throw AppError.notFound('Email not found');
+    const correctPassword = await bcrypt.compare(
+        details.password,
+        record.password,
+    );
+    if (!correctPassword)
+        throw AppError.badRequest('Password or Email incorrect');
+    return generateToken(record);
+}
+module.exports = { createUser, validateUser };

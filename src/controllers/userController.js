@@ -11,4 +11,14 @@ async function createUser(req, res, next) {
     }
 }
 
-module.exports = { createUser };
+async function validateUser(req, res, next) {
+    try {
+        const details = req.body;
+        const data = await userService.validateUser(details);
+        sendSuccess(req, res, { token: data }, 'user found', 200);
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { createUser, validateUser };
