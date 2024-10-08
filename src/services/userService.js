@@ -25,6 +25,11 @@ async function createHashedPass(password) {
 async function createUser(details) {
     details.userId = uuidv4();
     details.password = await createHashedPass(details.password);
+    const existingUser = await userModel.findOne({
+        $or: [{ email: details.email }, { username: details.username }],
+    });
+    if (existingUser)
+        throw AppError.conflict('Username or Email already in use');
     const newUser = new userModel(details);
     await newUser.save();
     return generateToken(newUser);
@@ -41,4 +46,10 @@ async function validateUser(details) {
         throw AppError.badRequest('Password or Email incorrect');
     return generateToken(record);
 }
-module.exports = { createUser, validateUser };
+
+async function getUserByUsername(username) {
+    const record = await userModel.findOne({ username });
+    if (!record) throw AppError.notFound('User not found');
+    return record;
+}
+module.exports = { createUser, validateUser, getUserByUsername };

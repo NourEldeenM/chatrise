@@ -7,7 +7,7 @@ async function createUser(req, res, next) {
         const data = await userService.createUser(details);
         sendSuccess(req, res, { token: data }, 'user created', 201);
     } catch (err) {
-        next();
+        next(err);
     }
 }
 
@@ -21,4 +21,13 @@ async function validateUser(req, res, next) {
     }
 }
 
-module.exports = { createUser, validateUser };
+async function getUserByUsername(req, res, next) {
+    try {
+        const record = await userService.getUserByUsername(req.params.username);
+        sendSuccess(req, res, { user: record });
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { createUser, validateUser, getUserByUsername };
