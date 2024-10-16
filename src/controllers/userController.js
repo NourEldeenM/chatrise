@@ -30,4 +30,18 @@ async function getUserByUsername(req, res, next) {
     }
 }
 
-module.exports = { createUser, validateUser, getUserByUsername };
+async function updateUserProfile(req, res, next) {
+    try {
+        const updatedRecord = await userService.updateUserProfile(req.user.id, req.body);
+        sendSuccess(req, res, updatedRecord);
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = {
+    createUser,
+    validateUser,
+    getUserByUsername,
+    updateUserProfile,
+};

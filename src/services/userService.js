@@ -52,4 +52,19 @@ async function getUserByUsername(username) {
     if (!record) throw AppError.notFound('User not found');
     return record;
 }
-module.exports = { createUser, validateUser, getUserByUsername };
+
+async function updateUserProfile(id, data) {
+    const record = await userModel.updateOne(
+        { userId: id },
+        { ...data },
+        { runValidators: true, new: true },
+    );
+    return record;
+}
+
+module.exports = {
+    createUser,
+    validateUser,
+    getUserByUsername,
+    updateUserProfile,
+};
